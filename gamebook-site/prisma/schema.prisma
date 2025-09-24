@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  gameSessions GameSession[]
+}
+
+model Story {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  authorName  String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  pages        StoryPage[]
+  gameSessions GameSession[]
+}
+
+model StoryPage {
+  id          Int      @id @default(autoincrement())
+  storyId     Int
+  pageNumber  Int
+  title       String?
+  content     String
+  imageUrl    String?
+  isStartPage Boolean  @default(false)
+  
+  story   Story        @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  choices StoryChoice[]
+  
+  @@unique([storyId, pageNumber])
+}
+
+model StoryChoice {
+  id                Int     @id @default(autoincrement())
+  pageId            Int
+  text              String
+  targetPageId      Int?
+  diceRequired      Int?
+  diceTarget        Int?
+  statsRequired     String? // JSON pour les conditions (ex: {"strength": 10, "health": 5})
+  
+  // Nouveaux champs pour la gestion des échecs
+  failureType       String? // "combat", "trap", "puzzle", "social" 
+  failureDamage     Int?    // Dégâts en cas d'échec (pour combat/piège)
+  failurePageId     Int?    // Page alternative en cas d'échec (pour puzzle/social)
+  allowRetry        Boolean @default(false) // Permet de refaire le test
+  retryText         String? // Texte affiché pour retry ("Continuer le combat", "Réessayer")
+  
+  page StoryPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model GameSession {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  storyId        Int
+  currentPageId  Int
+  characterClass String?
+  health         Int      @default(20)
+  strength       Int      @default(10)
+  dexterity      Int      @default(10)
+  intelligence   Int      @default(10)
+  inventory      String?  // JSON pour l'inventaire
+  startedAt      DateTime @default(now())
+  lastPlayedAt   DateTime @updatedAt
+  isCompleted    Boolean  @default(false)
+  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+}
