@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 
+export type UserRole = 'ADMIN' | 'AUTHOR' | 'PLAYER'
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12)
 }
@@ -9,7 +11,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword)
 }
 
-export async function createUser(email: string, username: string, password: string) {
+export async function createUser(email: string, username: string, password: string, role: UserRole = 'PLAYER') {
   const hashedPassword = await hashPassword(password)
   
   return prisma.user.create({
@@ -17,6 +19,7 @@ export async function createUser(email: string, username: string, password: stri
       email,
       username,
       password: hashedPassword,
+      role,
     },
   })
 }
@@ -39,4 +42,25 @@ export async function authenticateUser(email: string, password: string) {
   // Retourner l'utilisateur sans le mot de passe
   const { password: _, ...userWithoutPassword } = user
   return userWithoutPassword
+}
+
+// Fonctions utilitaires pour les permissions
+export function hasAdminAccess(role: UserRole): boolean {
+  return role === 'ADMIN'
+}
+
+export function hasAuthorAccess(role: UserRole): boolean {
+  return role === 'ADMIN' || role === 'AUTHOR'
+}
+
+export function canPlayGames(role: UserRole): boolean {
+  return true // Tous les rôles peuvent jouer
+}
+
+export function canManageUsers(role: UserRole): boolean {
+  return role === 'ADMIN'
+}
+
+export function canCreateStories(role: UserRole): boolean {
+  return role === 'ADMIN' || role === 'AUTHOR'
 }

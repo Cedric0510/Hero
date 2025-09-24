@@ -4,28 +4,53 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function createTestUser() {
-  console.log('🧪 Création d\'un utilisateur de test...')
+  console.log('🧪 Création des utilisateurs de test...')
 
-  // Supprimer l'utilisateur test s'il existe déjà
+  // Supprimer les utilisateurs test s'ils existent déjà
   await prisma.user.deleteMany({
-    where: { email: 'test@example.com' }
+    where: { 
+      email: { 
+        in: ['test@example.com', 'admin@example.com', 'author@example.com'] 
+      } 
+    }
   })
 
-  // Créer un nouvel utilisateur de test
   const hashedPassword = await bcrypt.hash('123456', 12)
   
-  const user = await prisma.user.create({
+  // Créer un utilisateur administrateur
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@example.com',
+      username: 'admin',
+      password: hashedPassword,
+      role: 'ADMIN',
+    }
+  })
+
+  // Créer un utilisateur auteur
+  const author = await prisma.user.create({
+    data: {
+      email: 'author@example.com',
+      username: 'author',
+      password: hashedPassword,
+      role: 'AUTHOR',
+    }
+  })
+
+  // Créer un utilisateur joueur
+  const player = await prisma.user.create({
     data: {
       email: 'test@example.com',
       username: 'testuser',
       password: hashedPassword,
+      role: 'PLAYER',
     }
   })
 
-  console.log('✅ Utilisateur de test créé !')
-  console.log(`📧 Email: test@example.com`)
-  console.log(`🔑 Mot de passe: 123456`)
-  console.log(`👤 ID: ${user.id}`)
+  console.log('✅ Utilisateurs de test créés !')
+  console.log(`� Admin - Email: admin@example.com | Mot de passe: 123456 | ID: ${admin.id}`)
+  console.log(`✏️ Auteur - Email: author@example.com | Mot de passe: 123456 | ID: ${author.id}`)
+  console.log(`🎮 Joueur - Email: test@example.com | Mot de passe: 123456 | ID: ${player.id}`)
 }
 
 createTestUser()

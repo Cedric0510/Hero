@@ -6,6 +6,8 @@ type User = {
   id: number
   username: string
   email: string
+  role?: string
+  createdAt?: Date
 }
 
 type Story = {
@@ -64,13 +66,27 @@ export default function GameMenuClient({ user, gameSessions }: GameMenuClientPro
     router.push(`/stories/${storyId}/restart`)
   }
 
+  const handleAdminAccess = () => {
+    router.push('/admin')
+  }
+
   const continuableGames = gameSessions.filter(session => !session.isCompleted)
   const completedGames = gameSessions.filter(session => session.isCompleted)
 
   return (
     <div className="space-y-6">
-      {/* Header avec déconnexion */}
-      <div className="flex justify-end">
+      {/* Header avec navigation et déconnexion */}
+      <div className="flex justify-between items-center">
+        <div className="flex space-x-4">
+          {user.role === 'ADMIN' && (
+            <button
+              onClick={handleAdminAccess}
+              className="text-blue-200 hover:text-white transition-colors text-sm flex items-center"
+            >
+              ⚙️ Administration
+            </button>
+          )}
+        </div>
         <button
           onClick={handleLogout}
           className="text-blue-200 hover:text-white transition-colors text-sm"
@@ -165,24 +181,26 @@ export default function GameMenuClient({ user, gameSessions }: GameMenuClientPro
         </div>
       </div>
 
-      {/* Éditeur d'histoires */}
-      <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 backdrop-blur-md rounded-lg p-6 border border-yellow-500/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-3xl">📝</div>
-            <div>
-              <h3 className="text-xl font-bold text-white">Éditeur d'Histoires</h3>
-              <p className="text-blue-200 text-sm">Créez vos propres livres dont vous êtes le héros</p>
+      {/* Éditeur d'histoires - Accessible aux ADMIN et AUTHOR seulement */}
+      {(user.role === 'ADMIN' || user.role === 'AUTHOR') && (
+        <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 backdrop-blur-md rounded-lg p-6 border border-yellow-500/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="text-3xl">📝</div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Éditeur d'Histoires</h3>
+                <p className="text-blue-200 text-sm">Créez vos propres livres dont vous êtes le héros</p>
+              </div>
             </div>
+            <button
+              onClick={() => router.push('/editor')}
+              className="px-6 py-3 bg-yellow-600/70 hover:bg-yellow-600/90 text-white font-semibold rounded-lg transition-all"
+            >
+              ✨ Ouvrir l'éditeur
+            </button>
           </div>
-          <button
-            onClick={() => router.push('/editor')}
-            className="px-6 py-3 bg-yellow-600/70 hover:bg-yellow-600/90 text-white font-semibold rounded-lg transition-all"
-          >
-            ✨ Ouvrir l'éditeur
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Statistiques rapides */}
       <div className="bg-white/5 backdrop-blur-md rounded-lg p-6">

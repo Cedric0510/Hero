@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { getCurrentUser } from '@/lib/session'
+import { canCreateStories } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     
-    if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    if (!user || !canCreateStories((user as any).role)) {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 })
     }
 
     const data = await request.formData()

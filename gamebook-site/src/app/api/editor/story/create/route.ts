@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
+import { canCreateStories } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -13,10 +14,10 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     
-    if (!user) {
+    if (!user || !canCreateStories((user as any).role)) {
       return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
+        { error: 'Accès non autorisé' },
+        { status: 403 }
       )
     }
 
