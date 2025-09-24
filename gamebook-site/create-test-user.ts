@@ -24,7 +24,7 @@ async function createTestUser() {
       username: 'admin',
       password: hashedPassword,
       role: 'ADMIN',
-    }
+    } as any
   })
 
   // Créer un utilisateur auteur
@@ -34,7 +34,7 @@ async function createTestUser() {
       username: 'author',
       password: hashedPassword,
       role: 'AUTHOR',
-    }
+    } as any
   })
 
   // Créer un utilisateur joueur
@@ -44,7 +44,7 @@ async function createTestUser() {
       username: 'testuser',
       password: hashedPassword,
       role: 'PLAYER',
-    }
+    } as any
   })
 
   console.log('✅ Utilisateurs de test créés !')

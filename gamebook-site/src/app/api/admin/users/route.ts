@@ -23,7 +23,7 @@ export async function GET() {
             gameSessions: true,
           }
         }
-      },
+      } as any,
       orderBy: {
         createdAt: 'desc'
       }

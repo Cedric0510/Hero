@@ -3,6 +3,14 @@ import { prisma } from './prisma'
 
 export type UserRole = 'ADMIN' | 'AUTHOR' | 'PLAYER'
 
+export interface User {
+  id: number
+  email: string
+  username: string
+  role: UserRole
+  createdAt: Date
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12)
 }
@@ -19,8 +27,8 @@ export async function createUser(email: string, username: string, password: stri
       email,
       username,
       password: hashedPassword,
-      role,
-    },
+      role: role,
+    } as any,
   })
 }
 

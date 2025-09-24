@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function PUT(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const currentUser = await getCurrentUser()
@@ -15,7 +15,8 @@ export async function PUT(
     }
 
     const { role } = await request.json()
-    const userId = parseInt(params.userId)
+    const resolvedParams = await params
+    const userId = parseInt(resolvedParams.userId)
 
     // Vérifier que le rôle est valide
     if (!['ADMIN', 'AUTHOR', 'PLAYER'].includes(role)) {
@@ -31,14 +32,14 @@ export async function PUT(
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { role: role as UserRole },
+      data: { role: role as UserRole } as any,
       select: {
         id: true,
         email: true,
         username: true,
         role: true,
         createdAt: true,
-      }
+      } as any
     })
 
     return NextResponse.json(updatedUser)

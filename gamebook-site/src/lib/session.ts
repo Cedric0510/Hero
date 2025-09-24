@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers'
 import { prisma } from './prisma'
+import { User } from './auth'
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<User | null> {
   try {
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('session')
@@ -17,17 +18,18 @@ export async function getCurrentUser() {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        createdAt: true,
-      }
+      where: { id: session.userId }
     })
 
-    return user
+    if (!user) return null
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: (user as any).role,
+      createdAt: user.createdAt
+    } as User
   } catch (error) {
     console.error('Error getting current user:', error)
     return null

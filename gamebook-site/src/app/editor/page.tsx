@@ -11,3 +11,4 @@ export default async function EditorPage() {
   }
 
   return <EditorClient currentUser={currentUser} />
+}
